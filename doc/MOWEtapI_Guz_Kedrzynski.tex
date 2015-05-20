@@ -1,0 +1,232 @@
+% !TeX spellcheck = pl_PL
+\documentclass[16]{article}
+\usepackage[utf8]{inputenc}
+\usepackage[a4paper]{geometry}
+\usepackage[polish]{babel}
+\usepackage{polski}
+\usepackage{titlesec}
+\usepackage{enumerate}
+\usepackage{enumitem}
+\usepackage{graphicx}
+\usepackage{float}
+\usepackage{mathtools}
+\usepackage{array}
+\newenvironment{steps}[1]{\begin{enumerate}[label=#1 \arabic*]}{\end{enumerate}}
+
+\setlength{\parindent}{0pt}
+\begin{document}
+	\begin{titlepage}
+		\begin{center}
+			\vspace*{0cm}
+			\textsc{\LARGE \bfseries Politechnika Warszawska}\\[1.5cm]
+			\textsc{\large Wydział Elektroniki i Technik Informacyjnych}\\[0.2cm]
+			\textsc{\large Informatyka}\\[1.6cm]
+			\textsc{\LARGE Metody Odkrywania Wiedzy }\\[1.4cm]
+			\rule{\linewidth}{0.5mm} \\ [0.8cm]
+      \textsc{\Huge Klasyfikator bayesowski} \\ [0.4cm]
+			\textsc{\Huge typu AODE} \\ [0.8cm]
+			\textsc{\large Nie-całkiem-naiwny klasyfikator bayesowski typu AODE \\ (averaged one-dependence estimators). \\ Porównania ze standardowym naiwnym klasyfikatorem bayesowskim i innymi algorytmami klasyfikacji dostępnymi w R.} \\ [0.8cm]
+			\textsc{\LARGE{\underline {Wstępne założenia}}} \\ [0.8cm]
+			\rule{\linewidth}{0.5mm} \\ [1cm]
+			
+			\begin{flushright}
+				Wykonali: \\[0.2cm]
+				{\large Paweł Guz}\\[0.2cm]
+				{\large Mateusz Kędrzyński}\\[0.8cm]
+				Prowadzący: \\[0.2cm]
+				{\large dr inż. Paweł Cichosz} \\ [0.8cm]
+			\end{flushright}
+			\vfill
+			{\large Warszawa, 10 IV 2015}
+		\end{center}
+	\end{titlepage}
+	
+\section{Interpretacja tematu projektu}
+\subsection{Wprowadzenie}
+Naiwny Klasyfikator Bayesa nie jest trudny w implementacji i często używany przy zagadnieniach klasyfikacji. Skuteczność jego działania zależy od dokładności estymowanych prawdopodobieństw atrybutów, które bazują na wzajemnej niezależności, co często nie jest spełnione. Jego odmiany: LBR jak i TAN polepszają jego działanie w zamian za znaczny koszt obliczeniowy. AODE ma być algorytmem zyskujący podobne rezultaty, bez nadmiernego narzutu obliczeniowego.
+\subsection{Naiwny klasyfikator Bayesa}
+Przyjmijmy następujące oznaczenia:
+\begin{itemize}[label=]
+    \item $x = \langle x_{1}, x_{2}, ..., x_{n} \rangle \in X$: przykład podlegający klasyfikacji
+    \item $y \in \{c_{1}, c_{2}, ..., c_{k} \}  $: klasy klasyfikacji
+    \item $\hat{ }$  : wielkość związana z danymi trenującymi
+    \item $T$: zbiór zmiennych trenujących
+\end{itemize} 
+
+Ze wzoru Bayesa otrzymujemy:
+\begin{equation}
+ \Pr(\mathnormal{y}|\bf{x})=\frac{\Pr(\mathnormal{y}, \bf{x})}{\Pr(\bf{x})}
+\end{equation} 
+
+a stąd:
+\begin{equation}
+ \operatorname*{arg\,max}_\mathnormal{y} (\Pr(\mathnormal{y}|\bf{x})) = \operatorname*{arg\,max}_\mathnormal{y} (\Pr(\mathnormal{y}, \bf{x}))
+\end{equation} 
+
+Zakładając, że dane trenujące stanowią reprezentatywną próbkę, częstość wystąpienia danego zdarzenia w próbce będzie z wystarczająco dobrą aproksymacją równe prawdopodobieństwu tego zdarzenia. 
+\begin{equation}
+\Pr(\mathnormal{y}, \bf{x}) \approx \hat{\Pr}(\mathnormal{y}, \bf{x})
+\end{equation} 
+
+Jednakże, zakładając, że liczba atrybutów jest dostatecznie duża, możliwość wystąpienia próbki $(\mathnormal{y}, \bf{x})$ będzie względnie mała. Jedną z metod obejścia tego ograniczenia, jest estymacja tego prawdopodobieństwa poprzez inne prawdopodobieństwa, które możemy z większą pewnością uzyskać z próbek.
+Z definicji prawdopodobieństwa warunkowego otrzymujemy:
+\begin{equation}
+\Pr(\mathnormal{y}, \bf{x}) = \Pr(\mathnormal{y})\Pr(\bf{x}|\mathnormal{y})
+\end{equation} 
+
+W przypadku względnie małej liczby klas oraz względnie dużej liczby próbek, wartość $\Pr(\mathnormal{y})$ jesteśmy w stanie wystarczająco dokładnie estymować. Jednakże estymowanie wartości $\Pr(\bf{x}|\mathnormal{y})$ wciąż będzie kłopotliwe. \\
+
+Naiwny Klasyfikator Bayesa zakłada niezależność atrybutów, co daje:
+\begin{equation}
+\label{BayesEquation}
+\Pr(\bf{x}|\mathnormal{y}) =  \prod_{i=1}^{n} \Pr(\bf{x_{i}}|\mathnormal{y}),
+\end{equation} 
+
+Opierając się na wyżej wymienionych zależnościach, wybieramy klasę dla danej próbki na podstawie:
+\begin{equation}
+ \operatorname*{arg\,max}_\mathnormal{y} (\hat{\Pr}(\mathnormal{y}) \prod_{i=1}^{n} \hat{\Pr}(\bf{x_{i}}|\mathnormal{y}))
+\end{equation} 
+
+W trakcie treningu Naiwny Klasyfikator Bayesa potrzebuje dwie tablice: pierwsza przechowująca estymowane prawdopodobieństwa klas oraz druga przechowująca estymowane prawdopodobieństwa dla danej klasy w zależności od wartości atrybutu. Pierwsza z nich jest jednowymiarowa, druga natomiast dwuwymiarowa. Złożoność przestrzenna wyniesie: $\mathcal{O}(knv)$, gdzie $v$ to średnia liczba wartości atrybutu, $k$ liczba klas, a $n$ to liczba atrybutów. Złożoność czasowa jest równa $\mathcal{O}(tn)$, gdzie $t$ jest liczbą próbek trenujących. 
+
+W trakcie klasyfikacji, zaklasyfikowanie pojedynczego elementu posiada złożoność czasową $\mathcal{O}(kn)$ oraz przestrzenną: $\mathcal{O}(knv)$ - utrzymanie tablicy otrzymanej w wyniku treningu.
+
+\subsection{Alternatywne podejścia oparte na klasyfikatorze Bayesa}
+Naruszenie założenia niezależności atrybutów może prowadzić do nieakceptowalnych błędów. Alternatywne podejścia takie jak: LBR oraz TAN pozwalają na rozluźnienie tego założenia. \\\\
+Przy podejściu LBR dla każdego przykładu $\bf{x}$ (klasyfikator tworzony w trakcie klasyfikacji) wyznaczany jest zbiór $W$ wartości pewnych atrybutów (wykorzystując specjalizowane algorytmy zachłanne). Następnie zakłada się niezależność spośród pozostałych atrybutów (nie wchodzących w skład $W$) dla danego $W$ oraz $y$. Stąd $\bf{x}$ jest klasyfikowane poprzez:
+\begin{equation}
+ \operatorname*{arg\,max}_\mathnormal{y} (\hat{\Pr}(\mathnormal{y}|\mathnormal{W}) \prod_{i=1}^{n} \hat{\Pr}(x_{i}|\mathnormal{y}, \mathnormal{W}))
+\end{equation} 
+W trakcie treningu złożoność pamięciowa i czasowa, niezbędna do przechowywania danych: $\mathcal{O}(tn)$, natomiast w trakcie klasyfikacji złożoność czasowa wynosi: $\mathcal{O}(tkn^{2})$ \\
+
+Przy podejściu TAN konstruowana jest funkcja $p(x_{i})$, która wyznacza atrybut zależny. $x$ jest klasyfikowane poprzez:
+\begin{equation}
+ \operatorname*{arg\,max}_\mathnormal{y} (\hat{\Pr}(\mathnormal{y}) \prod_{i=1}^{n} \hat{\Pr}(x_{i}|\mathnormal{y}, p(x_{i})))
+\end{equation} 
+
+W trakcie trenowania tworzona jest trzywymiarowa tablica: do tablicy dwuwymiarowej tworzonej przy naiwnym klasyfikatorze Bayesa dodawany jest jeden wymiar atrybut-wartość, pomocny przy późniejszym konstruowaniu funkcji $p$. Stąd złożoność pamięciowa wynosi: $\mathcal{O}(k(nv)^{2})$, natomiast złożoność czasowa $\mathcal{O}(tn^{2})$. Następnie do wytworzenia funkcji $p$ dochodzi rozważanie każdej pary atrybutów dla poszczególnych klas (złożoność wynosi $\mathcal{O}(k(nv)^{2})$) oraz następnie generowane jest maksymalne drzewo rozpinające $\mathcal{O}(n^{2} \log{n})$. \\
+
+Wyżej wymienione podejścia dają dobre rezultaty, jednakże są kosztowne obliczeniowo. Jest to spowodowane, głównie:\\
+- wyborem modelu: zbiór $W$ (LBR) oraz funkcja $p$ (TAN)\\
+- estymacją prawdopodobieństwa:  w trakcie klasyfikacji (LBR), poprzez trójwymiarową tablicę (TAN) 
+
+\subsection{Averaged One-Dependence Estimators (AODE)}
+Kolejnym algorytmem pozwalającym na osłabienie założenia o niezależności atrybutów oraz, ponadto, pozbawionym niektórych wad algorytmów TAN oraz LBR, jest Averaged One-Dependence (AODE).
+Opiera się na wybraniu atrybutów zależnych, których wartość dla danej próbki $x$ w zbiorze trenującym występuje przynajmniej przyjęte $m$ razy. \\
+
+Wykorzystując zależność:
+\begin{equation}
+\Pr(\mathnormal{y},\bf{x})=\Pr(\mathnormal{y, x_{i}})\Pr(\mathnormal{\bf{x}|y, x_{i}})
+\end{equation} 
+oraz sumując po wszystkich atrybutach występujących w danych testowych dla danej wartości odpowiednią liczbę razy otrzymujemy $(\geq m)$, otrzymujemy:
+\begin{equation}
+\Pr(\mathnormal{y},\bf{x})=\frac{\sum_{\mathnormal{i:1 \leq i \leq n \ \wedge \ m \leq F(x_{i})} } \Pr(\mathnormal{y, x_{i}})\Pr(\mathnormal{\bf{x}|\mathnormal{y, x_{i}}})}{\mathnormal{|{i:1 \leq i \leq n \ \wedge \ m \leq F(x_{i})}|}}
+\end{equation} 
+
+Ponieważ mianownik jest taki sam dla każdej klas, wybór odpowiedniej klasy sprowadza się do rozważenia następującego zagadnienia:
+\begin{equation}
+ \label{AOENWzor}
+ \operatorname*{arg\,max}_\mathnormal{y} (\sum_{\mathnormal{i:1 \leq i \leq n \ \wedge \ m \leq F(x_{i})} } \hat{\Pr}(\mathnormal{y, x_{i}})\prod_{j=1}^{n} \hat{\Pr}(\mathnormal{x_{j}|y, x_{i}}))
+\end{equation} 
+
+Złożoność pamięciowa podczas treningu jak i klasyfikacji jest taka sama i sprowadza się do utrzymywania tablicy trójwymiarowej: $\mathcal{O}(k(nv)^{2})$, złożoność czasowa w trakcie treningu: $\mathcal{O}(tn^{2})$, a w trakcie klasyfikacji: $\mathcal{O}(kn^{2})$. \\
+
+Oczekujemy lepszych rezultatów od algorytmu AODE ze względu na mniejszy nacisk na niezależność argumentów. Ponadto, zaletą AODE jest możliwość inkrementalnego nauczania. W przypadku dodatkowych danych albo aktualizacji liczby $m$ należy jedynie zaktualizować tabelę.
+
+\section{Implementacje algorytmów}
+\subsection{Implementacja algorytmu AODE} 
+Tematem projektu będzie implementacja algorytmu AODE. Jego główna idea została przedstawiona w punkcie 1.4. W celu zwiększenia jakości algorytmu następujące kwestie zostaną rozważone: \\
+
+\underline{wartości ciągłe} \\
+Implementacja zostanie zrealizowana w wersji akceptującej dane dyskretne. W przypadku atrybutów ciągłych niezbędna jest wcześniejsza dyskretyzacja. \\
+
+\underline{zerowe i małe prawdopodobieństwa} \\
+W przypadku gdy dane testowe nie pokrywają wszystkich możliwych kombinacji, prawdopodobieństwo: ${\Pr}(\mathnormal{x_{j}|y, x_{i}})$ lub ${\Pr}(\mathnormal{y, x_{i}})$  we wzorze \eqref{AOENWzor} może być równe 0. Operator iloczynu powoduje propagację zera, co może prowadzić do błędnych wyników związanych z niedostateczną ilością danych uczących i mniejszą zdolnością modelu do uogólniania. Aby temu zapobiec będziemy stosować m-estymację tych prawdopodobieństw:
+\begin{equation}
+{\Pr}(\mathnormal{y=d, x_i=v_i}) = \frac{|T_{x_i=v_i}\textsuperscript{d}| + 1}{|T\textsuperscript{d}|+k|x_i|} 
+\end{equation}
+\begin{equation}
+{\Pr}(\mathnormal{x_j=v_j | y=d, x_i=v_i}) = \frac{|T\textsuperscript{d}_{x_i=v_i, x_j=v_j}| + 1}{|T\textsuperscript{d}_{x_i=v_i}|+k|x_i||x_j|} 
+\end{equation}
+
+\underline{brakujące wartości atrybutów} \\
+Jeżeli w danych trenujących będzie atrybut niesprecyzowany to przy estymacji nie będzie on brany pod uwagę.
+
+\subsection{Wykorzystane algorytmy porównawcze}
+
+Działanie algorytmy AODE zostanie porównane z wyżej wymienionymi algorytmami: naiwny klasyfikator Bayesa, LRB, TAN. \\
+
+Ponadto, porównamy działanie powyższych algorytmów do innej klasy algorytmów klasyfikacji, jakimi są drzewa decyzyjne. Zbiór tych algorytmów polega na tworzeniu drzew w których każdy węzeł oznacza testowanie atrybutu natomiast każdy liść reprezentuję klasę decyzyjną. Proces klasyfikacji polega na przejściu od korzenia do liścia testując poszczególne warunki w węzłach.
+
+Jednym z popularniejszych algorytmów klasyfikacji za pomocą drzew decyzyjnych jest algorytm C.45. Drzewa tworzone są przy użyciu kryterium "gain ratio". Algorytm tworzy kolejne węzły dopóki liczba obiektów do podziału jest mniejsza niż pewna wartość progowa. Po utworzeniu drzewa można je przyciąć, tzn. niektóre węzły zastąpić liśćmi.\\
+
+\underline{wykorzystane pakiety} \\
+Implementacje algorytmów będą pochodziły z następujących pakietów:
+\begin{itemize}
+	\item Naiwny klasyfikator Bayesa - pakiet e1071
+	\item C.45 - pakiet RWekka
+	\item TAN - pakien bnlearn
+	\item LRB - pakiet RWekka
+\end{itemize}
+
+\section{Plan badań}
+\subsection{Cel eksperymentów}
+Pierwszym celem przeprowadzenia eksperymentów jest walidacja poprawności implementacji algorytmu. Sprawdzenie będzie wykonane poprzez stworzenie modelu na podstawie prostych danych trenujących, a następnie sprawdzenie czy model wykonuje akceptowalną klasyfikację.\\
+
+Drugim celem jest porównanie działania zaimplementowanego algorytmu AODE z innymi algorytmami klasyfikacji: naiwnym klasyfikatorem Bayesa, TAN, LRB oraz algorytmem wykorzystującym drzewa decyzyjne: C.45. Badany będzie wpływ liczby atrybutów na poprawność działania algorytmów, a także wpływ parametrów poszczególnych algorytmów.
+
+\subsection{Charakterystyka zbiorów danych}
+Wykorzystywane zbiory danych będą pochodziły z UCI Machine Learning Repository.
+Zbiory będą podzielone na trzy kategorie w zależności od ilości atrybutów:
+\begin{itemize}
+	\item mała ilość atrybutów (do 10)
+	\item średnia ilość atrybutów (od 10 do 100)
+	\item duża ilość atrybutóW (od 100)
+\end{itemize}
+
+Zbiory danych zostaną podzielone na dane treningowe oraz dane testowe poprzez losowanie w proporcji 2:1. Następnie dla każdej pary algorytm - zbiór danych zostanie utworzony możliwie najlepszy model, oparty na tych samych trenujących, poprzez dobranie odpowiednich parametrów algorytmów. \\
+
+Założono, że algorytm AODE zostanie zaimplementowany jedynie w wersji akceptującej skończony zbiór wartości atrybutów, dane zawierające atrybuty ciągłe będą musiały być zdyskretyzowane.
+
+\subsection{Parametry algorytmów, których wpływ na wyniki będzie badany}
+Algorytm AODE ma następujące parametry:
+
+\begin{itemize}
+	\item[m -] minimalna ilość przykładów w danych uczących które zawierają atrybut o wartości $x_i$ (patrz wzór \eqref{AOENWzor} )
+\end{itemize}
+
+\subsection{Miary jakości i procedury oceny modeli}
+Jakość modelu będzie oceniana poprzez wyznaczenie błędu jako:
+\begin{equation}
+e =\frac{\mathnormal{liczba\;blednie\;sklasyfikowanych\;przykladow}}{\mathnormal{liczba\;przykladow}}
+\end{equation},
+
+a także poprzez wybrane później wskaźniki jakości:
+\begin{itemize}
+	\item misclassification error
+	\item accuracy
+	\item true positive rate
+  \item false positive rate
+	\item precision
+	\item recall
+\end{itemize}
+
+\begin{thebibliography}{9}
+	
+	\bibitem{lamport94}
+		Paweł Cichosz,
+		\emph{Materiały do wykładu z MOW}
+			
+	\bibitem{lamport94}
+		Geoffrey I. Webb
+		Janice R. Boughton
+		Zhihai Wang,
+		\emph{Not so naive Bayes: Aggregating one-dependence estimators}.
+		School of Computer Science and Software Engineering
+    
+  \bibitem{lamport94}
+		Paweł Cichosz,
+		\emph{Data Mining Algorithms: Explained Using R}
+\end{thebibliography}
+
+\end{document}

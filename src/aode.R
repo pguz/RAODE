@@ -20,7 +20,7 @@ aode <- function(formula, data) {
   
   #class
   cl <- all.vars(formula[[2]])
-  
+
   #attributes
   attrs <- attributes(data[, names(data) != cl])$names
 

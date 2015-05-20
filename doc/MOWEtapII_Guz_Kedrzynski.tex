@@ -1,0 +1,110 @@
+% !TeX spellcheck = pl_PL
+\documentclass[16]{article}
+\usepackage[utf8]{inputenc}
+\usepackage[a4paper]{geometry}
+\usepackage[polish]{babel}
+\usepackage{polski}
+\usepackage{titlesec}
+\usepackage{enumerate}
+\usepackage{enumitem}
+\usepackage{graphicx}
+\usepackage{float}
+\usepackage{mathtools}
+\usepackage{array}
+\newenvironment{steps}[1]{\begin{enumerate}[label=#1 \arabic*]}{\end{enumerate}}
+
+\setlength{\parindent}{0pt}
+\begin{document}
+	\begin{titlepage}
+		\begin{center}
+			\vspace*{0cm}
+			\textsc{\LARGE \bfseries Politechnika Warszawska}\\[1.5cm]
+			\textsc{\large Wydział Elektroniki i Technik Informacyjnych}\\[0.2cm]
+			\textsc{\large Informatyka}\\[1.6cm]
+			\textsc{\LARGE Metody Odkrywania Wiedzy }\\[1.4cm]
+			\rule{\linewidth}{0.5mm} \\ [0.8cm]
+      \textsc{\Huge Klasyfikator bayesowski} \\ [0.4cm]
+			\textsc{\Huge typu AODE} \\ [0.8cm]
+			\textsc{\large Nie-całkiem-naiwny klasyfikator bayesowski typu AODE \\ (averaged one-dependence estimators). \\ Porównania ze standardowym naiwnym klasyfikatorem bayesowskim i innymi algorytmami klasyfikacji dostępnymi w R.} \\ [0.8cm]
+			\textsc{\LARGE{\underline {Sprawozdanie z etapu II}}} \\ [0.8cm]
+			\rule{\linewidth}{0.5mm} \\ [1cm]
+			
+			\begin{flushright}
+				Wykonali: \\[0.2cm]
+				{\large Paweł Guz}\\[0.2cm]
+				{\large Mateusz Kędrzyński}\\[0.8cm]
+				Prowadzący: \\[0.2cm]
+				{\large dr inż. Paweł Cichosz} \\ [0.8cm]
+			\end{flushright}
+			\vfill
+			{\large Warszawa, 10 IV 2015}
+		\end{center}
+	\end{titlepage}
+	
+\section{Opis implementacji}
+
+% Paweł, dużo łatwiej będzie Ci to napisać, jak możesz to uzupełnij :-) 
+
+\section{Testy poprawności implementacji}
+W celu udowodnienia poprawności implementacji algorytmu AODE użyto następującego zbioru danych ( plik: \textit{weather.csv}):
+
+\begin{tabular}{ |l|l|l|l|l| }
+\hline
+outlook & temperature & humidity & wind & play
+\\ \hline
+sunny & hot & high & normal & no
+\\ \hline
+sunny & hot & high & high & no
+\\ \hline
+overcast & hot & high & normal & yes
+\\ \hline
+rainy & mild & high & normal & yes
+\\ \hline
+rainy & cold & normal & normal & yes
+\\ \hline
+rainy & cold & normal & high & no
+\\ \hline
+overcast & cold & normal & high & yes
+\\ \hline
+sunny & mild & high & normal & no
+\\ \hline
+sunny & cold & normal & normal & yes
+\\ \hline
+rainy & mild & normal & normal & yes
+\\ \hline
+sunny & mild & normal & high & yes
+\\ \hline
+overcast & mild & high & high & yes
+\\ \hline
+overcast & hot & normal & normal & yes
+\\ \hline
+rainy & mild & high & high & no
+\\ \hline
+\end{tabular}\\
+
+Zbudowano model i dla każdego rekordu z danych trenujących wyznaczono klasę decyzyjną. Wyniki były w pełni zgodne z danymi wejściowymi. 
+
+
+\section{Testy i porównania z innymi algorytmami}
+\section{Wnioski}
+
+
+\begin{thebibliography}{9}
+	
+	\bibitem{lamport94}
+		Paweł Cichosz,
+		\emph{Materiały do wykładu z MOW}
+			
+	\bibitem{lamport94}
+		Geoffrey I. Webb
+		Janice R. Boughton
+		Zhihai Wang,
+		\emph{Not so naive Bayes: Aggregating one-dependence estimators}.
+		School of Computer Science and Software Engineering
+    
+  \bibitem{lamport94}
+		Paweł Cichosz,
+		\emph{Data Mining Algorithms: Explained Using R}
+\end{thebibliography}
+
+\end{document}
