@@ -1,14 +1,9 @@
-setwd("/media/kedrzu/Dane/studia/MOW/Projekt/RAODE/src/")
-
-
-source("utils.R")
+source("aode.R")
 
 data <- read.csv("weather.csv", header=TRUE, sep=",")
 
-formula = play~.
-trainingData = data
-testData= data
-aodeM = 1
+aodew <- aode(play~., data)
+result <- prediction.aode(aodew, 1, data)
+win <- cbind(result, apply(result, 1, function(x) noquote(names(which.max(x)))))
 
-res <- doTestForAllAlgorithms(formula = play~., trainingData = data, testData= data, aodeM = 1 )
-res
+print(win)

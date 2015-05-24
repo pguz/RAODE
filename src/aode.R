@@ -1,4 +1,5 @@
-aode <- function(formula, data) {
+aode <- function(formula, data) 
+{
   
   # HELPER FUNCTIONS
   

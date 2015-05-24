@@ -3,6 +3,8 @@ library("RWeka")
 library("bnlearn")
 source("aode.R")
 
+message("Do RWeka trzeba doinstalowac pakiet lazyBayesianRules przy użyciu komendy: WPM(\"install-package\", \"lazyBayesianRules\")")
+
 doTestForAllAlgorithms <- function(formula, trainingData, testData, aodeM)
 {
   result <- testAODE(formula, trainingData, testData, aodeM)
@@ -17,6 +19,9 @@ doTestForAllAlgorithms <- function(formula, trainingData, testData, aodeM)
   result <- rbind(result, testTAN(formula, trainingData, testData))
   row.names(result)[4] <- "TAN"
     
+  result <- rbind(result, testLBR(formula, trainingData, testData))
+  row.names(result)[4] <- "TAN"
+  
   result
 }
 
@@ -46,6 +51,7 @@ testC45 <-function(formula, trainingData, testData, cost = NULL, numFolds = 0, c
   model <- J48(formula, data = trainingData)
 
   e <- evaluate_Weka_classifier(model,
+                                newdata = testData,
                                 cost = cost, 
                                 numFolds = numFolds, 
                                 complexity = complexity , 
@@ -64,6 +70,22 @@ testTAN <- function(formula, trainingData, testData)
   pred <- predict(model, testData)
   
   result <- calcRatesFor(formula, testData, pred ) 
+  result
+}
+
+testLBR <-function(formula, trainingData, testData, cost = NULL, numFolds = 0, complexity = FALSE, class = FALSE, seed = NULL)
+{
+  model <- LBR(formula, data = trainingData)
+  
+  e <- evaluate_Weka_classifier(model,
+                                newdata = testData,
+                                cost = cost, 
+                                numFolds = numFolds, 
+                                complexity = complexity , 
+                                class = class, 
+                                seed = seed)
+  
+  result <- calcRates(e$confusionMatrix ) 
   result
 }
 
