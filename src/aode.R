@@ -16,30 +16,32 @@ aode <- function(formula, data)
       (v + m * p0)/(sum(v) + m)
     }
   }
-
+  
   #MAIN
   
   #class
   cl <- all.vars(formula[[2]])
-
+  
   #attributes
   attrs <- attributes(data[, names(data) != cl])$names
-
+  
   #initialize attribute-value counts
   valrank <- sapply(attrs, 
-                function(at)
-                  array(0, dim=c(nlevels(data[[at]])), dimnames=list(levels(data[[at]])))
-              )
+                    function(at)
+                      array(0, dim=c(nlevels(data[[at]])), dimnames=list(levels(data[[at]]))),
+                    simplify = FALSE
+  )
   
   #initialize (attribute-value, class) function
   atclfun <- function() {
-              sapply(attrs, 
-                function(at) {
-                  array(0, dim=c(nlevels(data[[at]]), nlevels(data[[cl]])), 
-                    dimnames=list(levels(data[[at]]), levels(data[[cl]])))
-                }
-              )
-            }
+    sapply(attrs, 
+           function(at) {
+             array(0, dim=c(nlevels(data[[at]]), nlevels(data[[cl]])), 
+                   dimnames=list(levels(data[[at]]), levels(data[[cl]])))
+           },
+           simplify = FALSE
+    )
+  }
   
   #initialize (attribute-value, class) counts   
   atclcorel <- atclfun()
@@ -47,11 +49,12 @@ aode <- function(formula, data)
   #initialize (attribute-value, attribute-value, class) counts
   #atatclcorel[[attribute]][[value]][[attribute]][value, class]
   atatclcorel <- sapply(attrs, 
-                function(at) {
-                  array(list(atclfun()), dim=c(nlevels(data[[at]])), dimnames=list(levels(data[[at]])))
-                }
-              )
-            
+                        function(at) {
+                          array(list(atclfun()), dim=c(nlevels(data[[at]])), dimnames=list(levels(data[[at]])))
+                        },
+                        simplify = FALSE
+  )
+  
   #fill arrays
   for (irow in (1:nrow(data))) {
     for (at in attrs) {
@@ -63,7 +66,7 @@ aode <- function(formula, data)
       inc(atclcorel[[at]][val, cla])
       
       for (atn in attrs) {
-      
+        
         valn <- data[[atn]][irow]
         
         inc(atatclcorel[[at]][[val]][[atn]][valn, cla])
@@ -80,22 +83,22 @@ aode <- function(formula, data)
         
         atatclcorel[[at]][[val]][[atn]] = 
           apply(atatclcorel[[at]][[val]][[atn]], 2, 
-            function(x) {
-              mest(x, nlevels(data[[atn]]))
-            }
+                function(x) {
+                  mest(x, nlevels(data[[atn]]))
+                }
           )
       }
     }
   }
-    
+  
   #models attributes
   `class<-`(list(
-        attributes  = attrs, 
-        class       = cl, 
-        atcounter    = valrank, 
-        pxy   = sapply(atclcorel, function(x) mest(x, prod(dim(x))))  , 
-        pxxy  = atatclcorel), 
-      "aode")
+    attributes  = attrs, 
+    class       = cl, 
+    atcounter    = valrank, 
+    pxy   = sapply(atclcorel, function(x) mest(x, prod(dim(x))), simplify = FALSE)  , 
+    pxxy  = atatclcorel), 
+    "aode")
 }
 
 
@@ -125,7 +128,7 @@ predict.aode <- function(model, m, example) {
             1, 
             prod
           )
-        }, 
+      }, 
       mindexes
     ), 
     1, 
