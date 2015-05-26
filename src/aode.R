@@ -3,11 +3,6 @@ aode <- function(formula, data)
   
   # HELPER FUNCTIONS
   
-  # incrementator
-  inc <- function(x) {
-    eval.parent(substitute(x <- x + 1))
-  }
-  
   # m-estimation
   mest <- function(v, m, p0=1/m) { 
     if(m == 0) {
@@ -62,14 +57,15 @@ aode <- function(formula, data)
       val <- data[[at]][irow]
       cla <- data[[cl]][irow]
       
-      inc(valrank[[at]][val])
-      inc(atclcorel[[at]][val, cla])
+      valrank[[at]][val] = valrank[[at]][val] + 1
+      atclcorel[[at]][val, cla] = atclcorel[[at]][val, cla] + 1
       
       for (atn in attrs) {
         
         valn <- data[[atn]][irow]
         
-        inc(atatclcorel[[at]][[val]][[atn]][valn, cla])
+        atatclcorel[[at]][[val]][[atn]][valn, cla] = 
+          atatclcorel[[at]][[val]][[atn]][valn, cla] + 1
       }
     }
   }  

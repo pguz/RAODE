@@ -5,6 +5,8 @@ source("aode.R")
 
 message("Do RWeka trzeba doinstalowac pakiet lazyBayesianRules przy użyciu komendy: WPM(\"install-package\", \"lazyBayesianRules\")")
 
+########################################################################################
+
 doTestForAllAlgorithms <- function(formula, trainingData, testData, aodeM)
 {
   result <- testAODE(formula, trainingData, testData, aodeM)
@@ -18,24 +20,31 @@ doTestForAllAlgorithms <- function(formula, trainingData, testData, aodeM)
   
   result <- rbind(result, testTAN(formula, trainingData, testData))
   row.names(result)[4] <- "TAN"
-    
+  
   result <- rbind(result, testLBR(formula, trainingData, testData))
-  row.names(result)[4] <- "TAN"
+  row.names(result)[5] <- "LBR"
   
   result
 }
 
+########################################################################################
+
 testAODE <- function(formula, trainingData, testData, aodeM)
 {
   aodew <- aode(formula, trainingData)
-  pred <- prediction.aode(aodew, aodeM, testData)
-  win <- cbind(pred, apply(pred, 1, function(x) noquote(names(which.max(x)))))[,3]
-  win <- sapply(win, noquote)
+  testAODEWithModel(formula, aodew, testData, aodeM)
+}
+
+testAODEWithModel <- function(formula, model, testData, aodeM)
+{
+  pred <- prediction.aode(model = model, m = aodeM, data = testData)
   
+  win <- apply(pred, 1, function(x) noquote(names(which.max(x))))
   
   result <- calcRatesFor(formula, testData, win) 
   result
 }
+
 
 testNaiveBayes <-function(formula, trainingData, testData)
 {
@@ -48,9 +57,9 @@ testNaiveBayes <-function(formula, trainingData, testData)
 
 testC45 <-function(formula, trainingData, testData, cost = NULL, numFolds = 0, complexity = FALSE, class = FALSE, seed = NULL)
 {
-  model <- J48(formula, data = trainingData)
-
-  e <- evaluate_Weka_classifier(model,
+  model = J48(formula, data = trainingData)
+  
+  e = evaluate_Weka_classifier(model,
                                 newdata = testData,
                                 cost = cost, 
                                 numFolds = numFolds, 
@@ -58,7 +67,7 @@ testC45 <-function(formula, trainingData, testData, cost = NULL, numFolds = 0, c
                                 class = class, 
                                 seed = seed)
   
-  result <- calcRates(e$confusionMatrix ) 
+  result = calcRates(e$confusionMatrix ) 
   result
 }
 
@@ -89,6 +98,8 @@ testLBR <-function(formula, trainingData, testData, cost = NULL, numFolds = 0, c
   result
 }
 
+########################################################################################
+
 calcRatesFor <- function(formula, dataForEvaluation, result)
 {
   cl <- all.vars(formula[[2]])
@@ -101,43 +112,87 @@ calcRatesFor <- function(formula, dataForEvaluation, result)
 }
 
 calcRatesFromData <- function(predicted, trues){
- 
+  
   xTab <- table(predicted, trues)
   calcRates(xTab)
 }
 
 calcRates <- function(xTab){
-
-  r <- matrix(NA, ncol = 6, nrow = 1, 
-              dimnames = list(c(),c('Accuracy',
-                                    'Error',
-                                    'Recall/Sensivity',
-                                    'Precision',
-                                    'Specifity',
-                                    'FMeasure')))
-  TN <- xTab[1,1]
-  FN <- xTab[1,2]
-  FP <- xTab[2,1]
-  TP <- xTab[2,2]
   
-  r[1,1] <- (TN + TP)/sum(xTab) # Accuracy
-  r[1,2] <- (FN + FP)/sum(xTab) # Error
+  result = 0
+  if(length(xTab[1,]) == 2 && length(xTab[,1]) == 2 )
+  {
+    result <- matrix(NA, ncol = 6, nrow = 1, 
+                     dimnames = list(c(),c('Accuracy',
+                                           'Error',
+                                           'Recall/Sensivity',
+                                           'Precision',
+                                           'Specifity',
+                                           'FMeasure')))
+    TN <- xTab[1,1]
+    FN <- xTab[1,2]
+    FP <- xTab[2,1]
+    TP <- xTab[2,2]
+    
+    result[1,1] <- (TN + TP)/sum(xTab) # Accuracy
+    result[1,2] <- (FN + FP)/sum(xTab) # Error
+    
+    TPRate = TP / sum( FN + TP )
+    FPRate = FP / sum( TN + FP )
+    
+    result[1,3] <- TPRate  # Recall / Sensivity
+    result[1,4] <- TP / (FP + TP) # Precision
+    result[1,5] <- 1 - FPRate # Specifity
+    result[1,6] <- 2 / ( 1/result[1,3] + 1/result[1,4]) # FMeasure
+  } else {
+    
+    result <- matrix(NA, ncol = 2, nrow = 1, 
+                     dimnames = list(c(), c('Accuracy', 
+                                            'Error')))
+    result[1,1] = sum(diag(xTab)) / sum(xTab)
+    result[1,2] = 1 - result[1,1]
+  }
   
-  TPRate = TP / sum( FN + TP )
-  FPRate = FP / sum( TN + FP )
-  
-  r[1,3] <- TPRate  # Recall / Sensivity
-  r[1,4] <- TP / (FP + TP) # Precision
-  r[1,5] <- 1 - FPRate # Specifity
-  r[1,6] <- 2 / ( 1/r[1,3] + 1/r[1,4]) # FMeasure
-  
-  r
+  result
 }
 
+########################################################################################
 
-toTexTable <- function(data, filename, addRowName = FALSE)
+dyskretyzuj <- function(data, colnum, method = "quantile", breaks = 3)
 {
-  fileConn <- file(filename)
+  przedzialy = discretize(data = data, method = "quantile", breaks = breaks)
+  data[,colnum] <- przedzialy[,1]
+  data
+}
+
+########################################################################################
+
+splitData <- function(data, traningDataLen = round(nrow(data)/2), testDataLen = NULL, seed=12349) {
+  
+
+  set.seed(seed)
+  
+  index <- 1:nrow(data)
+  trainindex <- sample(index, size = traningDataLen)
+  
+  trainset <- data[trainindex, ]
+  testset <- data[-trainindex, ]
+  
+  if(!is.null(testDataLen) && nrow(testset) > testDataLen)
+  {
+    index <- 1:testDataLen
+    trainindex <- sample(index, size = testDataLen)
+    testset <- testset[trainindex, ]
+  } 
+  
+  list(trainset=trainset,testset=testset)
+}
+
+########################################################################################
+
+toTexTable <- function(data, addRowName = TRUE, filename = NULL)
+{
+  linie = c("\begin{tabular}{ |l|l|l|l|l| }")
   if(addRowName)
   {
     linie = c("\\hline", paste(" & ", paste(colnames(data), collapse = " & ")))  
@@ -150,18 +205,28 @@ toTexTable <- function(data, filename, addRowName = FALSE)
   for(i in 1:(length(data[,1])))
   {
     linie = append(linie, "\\\\ \\hline")
+    rowStr = sapply(data[i,], function(x) toString(round(x, 2)))
     if(addRowName)
     {
-      newLine = paste(c(row.names(data)[i], sapply(data[i,], toString)), collapse = " & ")
+      newLine = paste(c(row.names(data)[i], rowStr), collapse = " & ")
     }
     else
     {
-      newLine = paste(sapply(data[i,], toString), collapse = " & ")
+      newLine = paste(rowStr, collapse = " & ")
     }
     linie = append(linie, newLine)      
   }
   linie = append(linie,"\\\\ \\hline")
-  writeLines(linie, fileConn)
-  
-  close(fileConn)
+  if(!is.null(filename))
+  {
+    fileConn <- file(filename)
+    writeLines(linie, fileConn)
+    close(fileConn)
+    
+  } else {
+    writeLines(linie)
+  }
 }
+
+########################################################################################
+

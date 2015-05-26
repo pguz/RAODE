@@ -43,7 +43,8 @@
 	
 \section{Opis implementacji}
 
-% Paweł, dużo łatwiej będzie Ci to napisać, jak możesz to uzupełnij :-) 
+% Paweł, dużo łatwiej będzie Ci to napisać, jak możesz to uzupełnij :-)
+% CHyba nie ma się też co rozwodzić za bardzo 
 
 \section{Testy poprawności implementacji}
 W celu udowodnienia poprawności implementacji algorytmu AODE użyto następującego zbioru danych ( plik: \textit{weather.csv}):
@@ -87,6 +88,61 @@ Zbudowano model i dla każdego rekordu z danych trenujących wyznaczono klasę d
 
 
 \section{Testy i porównania z innymi algorytmami}
+
+\subsection{Weather}
+
+\subsubsection{Charakterystyka zbioru}
+
+\begin{itemize}
+	\item Liczba atrybutów: 4
+	\item Liczba klas: 2
+	\item Liczba przykładów: 14
+	\item Podział: modele były oceniane oraz testowane na tym samym zbiorze danych
+\end{itemize}
+
+\subsubsection{Wyniki}
+\begin{tabular}{ |l|l|l|l|l|l|l| }
+\hline
+&  Accuracy & Error & Recall/Sensivity & Precision & Specifity & FMeasure
+\\ \hline
+AODE & 1 & 0 & 1 & 1 & 1 & 1
+\\ \hline
+Naive Bayes & 0.93 & 0.07 & 1 & 0.9 & 0.8 & 0.95
+\\ \hline
+C4.5 & 1 & 0 & 1 & 1 & 1 & 1
+\\ \hline
+TAN & 0.79 & 0.21 & 0.67 & 1 & 1 & 0.8
+\\ \hline
+LBR & 0.93 & 0.07 & 0.9 & 1 & 1 & 0.95
+\\ \hline
+\end{tabular}\\
+
+\subsection{Cars}
+\subsubsection{Charakterystyka zbioru}
+\begin{itemize}
+	\item Liczba atrybutów: 6
+	\item Liczba klas: 4
+	\item Liczba przykładów: 1728
+	\item Dane uczące: 864 przykładów (50\% wszystkich przykładów) 
+	\item Dane testowe: 864 przykładów (50\% wszystkich przykładów)
+\end{itemize}
+\subsubsection{Wyniki}
+\begin{tabular}{ |l|l|l| }
+\hline
+&  Accuracy & Error
+\\ \hline
+AODE & 0.91 & 0.09
+\\ \hline
+Naive Bayes & 0.87 & 0.13
+\\ \hline
+C4.5 & 0.9 & 0.1
+\\ \hline
+TAN & 0.3 & 0.7
+\\ \hline
+LBR & 0.93 & 0.07
+\\ \hline
+\end{tabular}\\
+
 \section{Wnioski}
 
 
