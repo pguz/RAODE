@@ -101,11 +101,14 @@ Zbudowano model i dla każdego rekordu z danych trenujących wyznaczono klasę d
 \end{itemize}
 
 \subsubsection{Wyniki}
+
 \begin{tabular}{ |l|l|l|l|l|l|l| }
 \hline
 &  Accuracy & Error & Recall/Sensivity & Precision & Specifity & FMeasure
 \\ \hline
-AODE & 1 & 0 & 1 & 1 & 1 & 1
+AODE ( $m < 5$)& 1 & 0 & 1 & 1 & 1 & 1
+\\ \hline
+AODE ( $m = 5, 6$) & 0.93 & 0.07 & 1 & 0.9 & 0.8 & 0.95
 \\ \hline
 Naive Bayes & 0.93 & 0.07 & 1 & 0.9 & 0.8 & 0.95
 \\ \hline
@@ -115,7 +118,10 @@ TAN & 0.79 & 0.21 & 0.67 & 1 & 1 & 0.8
 \\ \hline
 LBR & 0.93 & 0.07 & 0.9 & 1 & 1 & 0.95
 \\ \hline
-\end{tabular}\\
+
+\end{tabular}
+\\\\
+Dla prostego zbioru danych jakim jest zbiór "weather", wyniki uzyskane przez algorytm AODE dają bardzo dobry rezultat, lepszy niż naiwny bayes. Parametr \textit{m} jeżeli jest mniejszy niż 5 nie ma wpływu na wyniki. Jest to spowodowane tym że każda wartość każdego atrybutu występuje w co najmniej 4 przykładach. Dla parametru $m = 5$ następuje zwiększenie ilości błędów. Zależność ta jest spowodowana małą ilością przykładów - każdy przykład jest rozróżnialny. 
 
 \subsection{Cars}
 \subsubsection{Charakterystyka zbioru}
@@ -123,25 +129,82 @@ LBR & 0.93 & 0.07 & 0.9 & 1 & 1 & 0.95
 	\item Liczba atrybutów: 6
 	\item Liczba klas: 4
 	\item Liczba przykładów: 1728
-	\item Dane uczące: 864 przykładów (50\% wszystkich przykładów) 
-	\item Dane testowe: 864 przykładów (50\% wszystkich przykładów)
+	\item Dane uczące: 864 przykładów (50\% wszystkich przykładów wybranych losowo) 
+	\item Dane testowe: 864 przykładów (pozostałe przykłady)
 \end{itemize}
 \subsubsection{Wyniki}
 \begin{tabular}{ |l|l|l| }
 \hline
+	 &  Accuracy & Error
+ \\ \hline
+ AODE ($m < 205$) & 0.911 & 0.089
+ \\ \hline
+ AODE ($m = 205$) &  0.913 & 0.087
+ \\ \hline
+ AODE ($m = 210$) & 0.907 & 0.093
+ \\ \hline
+ AODE ($m = 250$) & 0.894 & 0.106
+ \\ \hline
+ AODE ($m = 280$) & 0.889 & 0.111
+ \\ \hline
+  Naive Bayes & 0.866 & 0.134
+ \\ \hline
+ TAN & 0.3 & 0.7
+ \\ \hline
+ LBR & 0.932 & 0.068
+ \\ \hline
+ C4.5 & 0.896 & 0.104
+ \\ \hline
+\end{tabular}\\
+
+Wpływ parametru m na wynik jest zależny od rozkładu wartości poszczególnych atrybutów. W zbiorze danych \textit{car} liczba wystąpień wartości atrybutów zawiera się w przedziale [205, 305] dlatego też atrybut m powinien być mniejszy niż górna granica tego przedziału. Widać tutaj pierwszy z problemów w doborze parametru \textit{m} - zależy od ilości danych uczących. W przypadku inkrementalnego tworzenia modelu parametr ten wraz z douczaniem modelu, powinien być zmieniany. 
+
+
+\subsection{Mushrums}
+\subsubsection{Charakterystyka zbioru}
+\begin{itemize}
+	
+	\item {\LARGE DO UZUPEŁNIENIA }
+	
+	\item Dane uczące: 50\% wszystkich przykładów wybranych losowo 
+	\item Dane testowe: pozostałe przykłady
+\end{itemize}
+
+\subsubsection{Wyniki}
+
+\begin{tabular}{ |l|l|l| }
+\hline
 &  Accuracy & Error
 \\ \hline
-AODE & 0.91 & 0.09
+AODE ($m = 0$) & 0.666 & 0.334
 \\ \hline
-Naive Bayes & 0.87 & 0.13
+AODE ($m = 300$) & 0.668 & 0.332
 \\ \hline
-C4.5 & 0.9 & 0.1
+AODE ($m = 600$) & 0.665 & 0.335
 \\ \hline
-TAN & 0.3 & 0.7
+AODE ($m = 1500$) & 0.662 & 0.338
 \\ \hline
-LBR & 0.93 & 0.07
+AODE ($m = 2200$) & 0.638 & 0.362
 \\ \hline
-\end{tabular}\\
+AODE ($m = 2800$) & 0.639 & 0.361
+\\ \hline
+AODE ($m = 3300$) & 0.638 & 0.362
+\\ \hline
+AODE ($m = 3500$) &0.637 & 0.363
+\\ \hline
+Naive Bayes & 0.643 & 0.357
+\\ \hline
+TAN & 0.144 & 0.856
+\\ \hline
+LBR & 0.669 & 0.331
+\\ \hline
+C4.5 & 0.616 & 0.384
+\\ \hline
+\end{tabular} \\\\
+
+Ilości atrybutów od 18 do 3973. 
+
+im większy parametr M tym szybciej się liczy
 
 \section{Wnioski}
 

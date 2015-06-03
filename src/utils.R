@@ -9,20 +9,26 @@ message("Do RWeka trzeba doinstalowac pakiet lazyBayesianRules przy użyciu kome
 
 doTestForAllAlgorithms <- function(formula, trainingData, testData, aodeM)
 {
-  result <- testAODE(formula, trainingData, testData, aodeM)
-  row.names(result)[1] <- "AODE"
+  idx = 1
+  #result <- testAODE(formula, trainingData, testData, aodeM)
+  #row.names(result)[idx] <- "AODE"
   
-  result <- rbind(result, testNaiveBayes(formula, trainingData, testData))
-  row.names(result)[2] <- "Naive Bayes"
+  #idx = idx + 1
+  #result <- rbind(result, testNaiveBayes(formula, trainingData, testData))
+  result <- testNaiveBayes(formula, trainingData, testData)
+  row.names(result)[idx] <- "Naive Bayes"
   
-  result <- rbind(result, testC45(formula, trainingData, testData))
-  row.names(result)[3] <- "C4.5"
-  
+  idx = idx + 1
   result <- rbind(result, testTAN(formula, trainingData, testData))
-  row.names(result)[4] <- "TAN"
+  row.names(result)[idx] <- "TAN"
   
+  idx = idx + 1
   result <- rbind(result, testLBR(formula, trainingData, testData))
-  row.names(result)[5] <- "LBR"
+  row.names(result)[idx] <- "LBR"
+  
+  idx = idx + 1
+  result <- rbind(result, testC45(formula, trainingData, testData))
+  row.names(result)[idx] <- "C4.5"
   
   result
 }
@@ -55,19 +61,13 @@ testNaiveBayes <-function(formula, trainingData, testData)
   result
 }
 
-testC45 <-function(formula, trainingData, testData, cost = NULL, numFolds = 0, complexity = FALSE, class = FALSE, seed = NULL)
+testC45 <-function(formula, trainingData, testData)
 {
-  model = J48(formula, data = trainingData)
+  model <- J48(formula, trainingData)
   
-  e = evaluate_Weka_classifier(model,
-                                newdata = testData,
-                                cost = cost, 
-                                numFolds = numFolds, 
-                                complexity = complexity , 
-                                class = class, 
-                                seed = seed)
+  e <- evaluate_Weka_classifier(model, testData)
   
-  result = calcRates(e$confusionMatrix ) 
+  result <- calcRates(e$confusionMatrix ) 
   result
 }
 
@@ -205,7 +205,7 @@ toTexTable <- function(data, addRowName = TRUE, filename = NULL)
   for(i in 1:(length(data[,1])))
   {
     linie = append(linie, "\\\\ \\hline")
-    rowStr = sapply(data[i,], function(x) toString(round(x, 2)))
+    rowStr = sapply(data[i,], function(x) toString(round(x, 3)))
     if(addRowName)
     {
       newLine = paste(c(row.names(data)[i], rowStr), collapse = " & ")
