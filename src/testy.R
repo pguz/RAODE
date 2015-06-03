@@ -62,6 +62,10 @@ toTexTable(result)
 # liczba klas: 4
 
 data <- read.csv("data/mushroom.data", sep=",")
+n <- names(data)
+toRemove <- c("p.2")
+
+data <- data[, !(n %in% toRemove)]
 
 splData = splitData(data, seed = 1234)
 
@@ -79,7 +83,7 @@ toTexTable(res)
 
 # tylko dla AODE
 aodew <- aode(formula, splData$trainset)
-pred <- prediction.aode(model = aodew, m = 280, data = splData$testset)
+pred <- prediction.aode(model = aodew, m = 3900, data = splData$testset)
 win <- apply(pred, 1, function(x) noquote(names(which.max(x))))
 
 result <- calcRatesFor(formula, splData$testset, win) 
