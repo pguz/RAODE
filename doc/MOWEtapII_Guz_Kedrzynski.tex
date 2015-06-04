@@ -26,7 +26,7 @@
       \textsc{\Huge Klasyfikator bayesowski} \\ [0.4cm]
 			\textsc{\Huge typu AODE} \\ [0.8cm]
 			\textsc{\large Nie-całkiem-naiwny klasyfikator bayesowski typu AODE \\ (averaged one-dependence estimators). \\ Porównania ze standardowym naiwnym klasyfikatorem bayesowskim i innymi algorytmami klasyfikacji dostępnymi w R.} \\ [0.8cm]
-			\textsc{\LARGE{\underline {Sprawozdanie z etapu II}}} \\ [0.8cm]
+			\textsc{\LARGE{\underline {Dokumentacja końcowa}}} \\ [0.8cm]
 			\rule{\linewidth}{0.5mm} \\ [1cm]
 			
 			\begin{flushright}
@@ -37,21 +37,121 @@
 				{\large dr inż. Paweł Cichosz} \\ [0.8cm]
 			\end{flushright}
 			\vfill
-			{\large Warszawa, 10 IV 2015}
+			{\large Warszawa, 08 VI 2015}
 		\end{center}
 	\end{titlepage}
 	
-\section{Opis implementacji}
+\section{Interpretacja tematu projektu}
+\subsection{Wprowadzenie}
+Naiwny Klasyfikator Bayesa nie jest trudny w implementacji i często używany przy zagadnieniach klasyfikacji. Skuteczność jego działania zależy od dokładności estymowanych prawdopodobieństw atrybutów, które bazują na wzajemnej niezależności, co często nie jest spełnione. Jego odmiany: LBR jak i TAN polepszają jego działanie w zamian za znaczny koszt obliczeniowy. AODE ma być algorytmem zyskujący podobne rezultaty, bez nadmiernego narzutu obliczeniowego.
+\subsection{Naiwny klasyfikator Bayesa}
+Przyjmijmy następujące oznaczenia:
+\begin{itemize}[label=]
+    \item $x = \langle x_{1}, x_{2}, ..., x_{n} \rangle \in X$: przykład podlegający klasyfikacji
+    \item $y \in \{c_{1}, c_{2}, ..., c_{k} \}  $: klasy klasyfikacji
+    \item $\hat{ }$  : wielkość związana z danymi trenującymi
+    \item $T$: zbiór zmiennych trenujących
+\end{itemize} 
 
-% Paweł, dużo łatwiej będzie Ci to napisać, jak możesz to uzupełnij :-)
-% CHyba nie ma się też co rozwodzić za bardzo 
+Ze wzoru Bayesa otrzymujemy:
+\begin{equation}
+ \Pr(\mathnormal{y}|\bf{x})=\frac{\Pr(\mathnormal{y}, \bf{x})}{\Pr(\bf{x})}
+\end{equation} 
+
+a stąd:
+\begin{equation}
+ \operatorname*{arg\,max}_\mathnormal{y} (\Pr(\mathnormal{y}|\bf{x})) = \operatorname*{arg\,max}_\mathnormal{y} (\Pr(\mathnormal{y}, \bf{x}))
+\end{equation} 
+
+Zakładając, że dane trenujące stanowią reprezentatywną próbkę, częstość wystąpienia danego zdarzenia w próbce będzie z wystarczająco dobrą aproksymacją równe prawdopodobieństwu tego zdarzenia. 
+\begin{equation}
+\Pr(\mathnormal{y}, \bf{x}) \approx \hat{\Pr}(\mathnormal{y}, \bf{x})
+\end{equation} 
+
+Jednakże, zakładając, że liczba atrybutów jest dostatecznie duża, możliwość wystąpienia próbki $(\mathnormal{y}, \bf{x})$ będzie względnie mała. Jedną z metod obejścia tego ograniczenia, jest estymacja tego prawdopodobieństwa poprzez inne prawdopodobieństwa, które możemy z większą pewnością uzyskać z próbek.
+Z definicji prawdopodobieństwa warunkowego otrzymujemy:
+\begin{equation}
+\Pr(\mathnormal{y}, \bf{x}) = \Pr(\mathnormal{y})\Pr(\bf{x}|\mathnormal{y})
+\end{equation} 
+
+W przypadku względnie małej liczby klas oraz względnie dużej liczby próbek, wartość $\Pr(\mathnormal{y})$ jesteśmy w stanie wystarczająco dokładnie estymować. Jednakże estymowanie wartości $\Pr(\bf{x}|\mathnormal{y})$ wciąż będzie kłopotliwe. \\
+
+Naiwny Klasyfikator Bayesa zakłada niezależność atrybutów, co daje:
+\begin{equation}
+\label{BayesEquation}
+\Pr(\bf{x}|\mathnormal{y}) =  \prod_{i=1}^{n} \Pr(\bf{x_{i}}|\mathnormal{y}),
+\end{equation} 
+
+Opierając się na wyżej wymienionych zależnościach, wybieramy klasę dla danej próbki na podstawie:
+\begin{equation}
+ \operatorname*{arg\,max}_\mathnormal{y} (\hat{\Pr}(\mathnormal{y}) \prod_{i=1}^{n} \hat{\Pr}(\bf{x_{i}}|\mathnormal{y}))
+\end{equation} 
+
+\subsection{Averaged One-Dependence Estimators (AODE)}
+Algorytmem pozwalającym na osłabienie założenia o niezależności atrybutów jest Averaged One-Dependence (AODE).
+Opiera się na wybraniu atrybutów zależnych, których wartość dla danej próbki $x$ w zbiorze trenującym występuje przynajmniej przyjęte $m$ razy. \\
+
+Wykorzystując zależność:
+\begin{equation}
+\Pr(\mathnormal{y},\bf{x})=\Pr(\mathnormal{y, x_{i}})\Pr(\mathnormal{\bf{x}|y, x_{i}})
+\end{equation} 
+oraz sumując po wszystkich atrybutach występujących w danych testowych dla danej wartości odpowiednią liczbę razy otrzymujemy $(\geq m)$, otrzymujemy:
+\begin{equation}
+\Pr(\mathnormal{y},\bf{x})=\frac{\sum_{\mathnormal{i:1 \leq i \leq n \ \wedge \ m \leq F(x_{i})} } \Pr(\mathnormal{y, x_{i}})\Pr(\mathnormal{\bf{x}|\mathnormal{y, x_{i}}})}{\mathnormal{|{i:1 \leq i \leq n \ \wedge \ m \leq F(x_{i})}|}}
+\end{equation} 
+
+Ponieważ mianownik jest taki sam dla każdej klas, wybór odpowiedniej klasy sprowadza się do rozważenia następującego zagadnienia:
+\begin{equation}
+ \label{AOENWzor}
+ \operatorname*{arg\,max}_\mathnormal{y} (\sum_{\mathnormal{i:1 \leq i \leq n \ \wedge \ m \leq F(x_{i})} } \hat{\Pr}(\mathnormal{y, x_{i}})\prod_{j=1}^{n} \hat{\Pr}(\mathnormal{x_{j}|y, x_{i}}))
+\end{equation} 
+
+Złożoność pamięciowa podczas treningu jak i klasyfikacji jest taka sama i sprowadza się do utrzymywania tablicy trójwymiarowej (albo pięciowymiarowej) ($v$ - średnia liczba wartości atrybutu, $k$ - liczba klas, $n$ - liczba atrybutów, a $t$ - liczba próbek trenujących): $\mathcal{O}(k(nv)^{2})$, złożoność czasowa w trakcie treningu: $\mathcal{O}(tn^{2})$, a w trakcie klasyfikacji: $\mathcal{O}(kn^{2})$. \\
+
+Oczekujemy lepszych rezultatów od algorytmu AODE ze względu na mniejszy nacisk na niezależność argumentów. Ponadto, zaletą AODE jest możliwość inkrementalnego nauczania. W przypadku dodatkowych danych należy jedynie zaktualizować tabelę. Parametr $m$ jest także niezależny od modelu. 
+
+\section{Struktura projektu}
+
+Na projekt składają się następujące foldery:
+\begin{itemize}
+  \item $data$  - użyte zbiory danych
+  \item $doc$   - dokumentacja projektu
+  \item $src$   - implementacja algorytmu + testy
+\end{itemize} 
+
+\section{Opis implementacji}
+Implementacja algorytmu znajduje się w pliku \textit{src/aode.R}.
+Funkcja $aode$ jako parametry przyjmuje: $formula$ - parametr opisujący atrybut decyzyjny oraz $data$ - dane wykorzystywane do nauki modelu. Po wczytaniu dostępnych klas oraz atrybutów do zmiennych odpowiednio $cl$ oraz $attrs$, inicjalizowane są trzy tablice. 
+\begin{itemize}
+\item $T_{kv}$ - zliczająca wystąpienie każdej wartości każdego z atrybutów. 
+\item $T_{kvc}$ - zawierająca prawodpodobieństwo wystąpenia klas dla wartości każdego atrybutu. 
+\item $T_{kvkvc}$ - zawierająca prawodpodobieństwo wystąpenia klas dla każdych dwóch par wartość-atrybut.
+\end{itemize}
+Następnie zachodzi faza trenowania: 
+\begin{enumerate}
+\item Zliczanie wystąpień odpowiednich wartości we wszystkich tabelach na podstawie danych trenujących.
+\item Obliczanie prawdopodobieństw z wykorzystaniem estymaty Laplace'a.
+\end{enumerate}
+
+Ostatecznie tworzony jest model, składający się z listy atrybutów, klas oraz wyżej wymienionych tablic. \\
+
+Do predykcji została użyta funkcja \textit{prediction.aode}, która jako parametry pobiera wyuczony model, wartość $m$ - będącą parametrem algorytmu AODE, oraz zbiór danych. Pierwszym krokiem jest na podstawie tablicy $T_{kv}$ wyznaczenie istotnych atrybutów dla badanego przykładu: spełniających warunek $m \leq F(x_{i})$, gdzie $x_{i}$ to wartość dla $i$-tego atrybutu, a funkcja $F(x_{i})$ określa liczbę wystąpień w danych trenujących. Następnie zgodnie ze wzorem:
+\begin{equation}
+ \label{AOENWzor}
+ \sum_{\mathnormal{i:1 \leq i \leq n \ \wedge \ m \leq F(x_{i})} } \hat{\Pr}(\mathnormal{y, x_{i}})\prod_{j=1}^{n} \hat{\Pr}(\mathnormal{x_{j}|y, x_{i}})
+\end{equation}
+obliczany jest znormalizowany wektor wartości dla każdej klasy $y$. \\
+
+Przyjęto, że dane wejściowe, będą zdyskretyzowane oraz nie zawierały wartości pustych.
 
 \section{Testy poprawności implementacji}
-W celu udowodnienia poprawności implementacji algorytmu AODE użyto następującego zbioru danych ( plik: \textit{weather.csv}):
+W celu udowodnienia poprawności implementacji algorytmu AODE użyto następującego zbioru danych (plik: \textit{data/weather.csv}): Tablica 1.\\
 
-\begin{tabular}{ |l|l|l|l|l| }
+\begin{table}[ht]
+\begin{center}
+\begin{tabular}{|l|l|l|l|l|}
 \hline
-outlook & temperature & humidity & wind & play
+\textbf{outlook} & \textbf{temperature} & \textbf{humidity} & \textbf{wind} & \textbf{play}
 \\ \hline
 sunny & hot & high & normal & no
 \\ \hline
@@ -81,13 +181,94 @@ overcast & hot & normal & normal & yes
 \\ \hline
 rainy & mild & high & high & no
 \\ \hline
-\end{tabular}\\
+\end{tabular}
+\caption{Dane weryfikujące}
+\end{center}
+\end{table}
+Z uwagi na małą liczbę przykładów zbudowano model dla $m = 1$ i dla każdego rekordu z danych trenujących wyznaczono klasę decyzyjną ($src/verification.R$). Zgodność z danymi wejściowymi wskazuje, że zaimplementowany algorytm może mieć rację bytu: Tablica 2.
 
-Zbudowano model i dla każdego rekordu z danych trenujących wyznaczono klasę decyzyjną. Wyniki były w pełni zgodne z danymi wejściowymi. 
+\begin{table}[ht]
+\begin{center}
+\begin{tabular}{|l|l|l|l|l|}
+\hline
+\textbf{no} & \textbf{yes} & \textbf{predict} & \textbf{real}
+\\ \hline
+0.809 & 0.191 & no & no
+\\ \hline
+0.868 & 0.132 & no & no
+\\ \hline
+0.242 & 0.758 & yes & yes
+\\ \hline
+0.340 & 0.660 & yes & yes
+\\ \hline
+0.142 & 0.858 & yes & yes
+\\ \hline
+0.524 & 0.476 & no & no
+\\ \hline
+0.211 & 0.789 & yes & yes
+\\ \hline
+0.706 & 0.294 & no & no
+\\ \hline
+0.130 & 0.870 & yes & yes
+\\ \hline
+0.121 & 0.879 & yes & yes
+\\ \hline
+0.247 & 0.753 & yes & yes
+\\ \hline
+0.257 & 0.743 & yes & yes
+\\ \hline
+0.089 & 0.911 & yes & yes
+\\ \hline
+0.583 & 0.417 & no & no
+\\ \hline
+\end{tabular}
+\caption{Weryfikacja algorytmu AODE}
+\end{center}
+\end{table}
+\clearpage
+\section{Wykorzystane algorytmu porównawcze}
 
+\subsection{Naiwny Klasyfikator Bayesa}
+Opis algorytmu znajduje się w punkcie $1.2$.  Zostały wykorzystane i porównane przez nas dwie implementacje:
+\begin{itemize}
+\item $naiveBayes$, znajduje się w pakiecie $e1071$.
+\item $naive.bayes$, znajduje się w pakiecie $bnlearn$.
+\end{itemize}
+\subsection{Klasyfikator Tree-Augmented naive Bayes (TAN)}
+Jest to podejście oparte na naiwnym klasyfkatorze Bayesa. W celu osłabienia warunku niezależności atrybutów, konstruowana jest funkcja $p(x_{i})$, która wyznacza atrybut zależny. Klasa docelowa jest wyznaczana na podstawie:
+\begin{equation}
+ \operatorname*{arg\,max}_\mathnormal{y} (\hat{\Pr}(\mathnormal{y}) \prod_{i=1}^{n} \hat{\Pr}(x_{i}|\mathnormal{y}, p(x_{i})))
+\end{equation} 
 
+Wykorzystana przez nas implementacja $tree.bayes$ pochodzi z pakietu $bnlearn$.
+ 
+\subsection{Klasyfikator Lazy Bayesian Rules (LBR)}
+Przy podejściu LBR dla każdego przykładu $x$ (klasyfikator tworzony jest w trakcie klasyfikacji) wyznaczany jest zbiór $W$ wartości pewnych atrybutów (wykorzystując specjalizowane algorytmy zachłanne). Następnie zakłada się niezależność spośród pozostałych atrybutów (nie wchodzących w skład $W$) dla danego $W$ oraz $y$. 
+ 
+Implementacja przez nas użyta to $LBR$ z biblioteki $RWeka$. 
+ 
+\subsection{Drzewo decyzyjne}
+Ponadto, użyliśmy dwóch algorytmów, gdzie model jest odmienny od klasyfikatora Bayesa. Pierwszym z nich są drzewa decyzyjne, implementacja użyta to $C4.5$ z biblioteki $RWeka$.
+
+\subsection{Maszyna wektorów nośnych}
+Użyta przez nas implementacja maszyny wektorów nośnych to $svm$ z biblioteki $e1071$.
 
 \section{Testy i porównania z innymi algorytmami}
+Został przetestowane przez nas 3 zbiory danych (src/tests.R): 
+\begin{itemize}
+\item weather - bardzo mały zbiór danych, wykorzystany do wstępnego przyjrzenia się algorytmom 
+\item car - mały zbiór danych
+\item mushroom - średni zbiór danych
+\end{itemize}
+W przypadku większych zbiorów danych, istniały problemy z wystarczającymi zasobami używanych przez nas maszyn obliczeniowych. \\
+
+Wszystkie użyte przez nas dane zawierają atrybuty dyskretne. \\
+
+Czas wykonania poszczególnych funkcji wyznaczono na podstawie funkcji:
+\begin{center}
+$system.time(replicate(N, function(args, ...)))$
+\end{center}
+ gdzie $N$ było dobierane eksperymentalnie, a czas odpowiednio uśredniany. W celu uniezależnienia się od architektury komputera, czas jest porównywany względem czasu wykonania testu z wykorzystaniem naiwnego klasyfikatora Bayesa z biblioteki $bnlearn$. Średnio ta implementacja dawała najmniejsze wartości.
 
 \subsection{Weather}
 
@@ -102,26 +283,32 @@ Zbudowano model i dla każdego rekordu z danych trenujących wyznaczono klasę d
 
 \subsubsection{Wyniki}
 
-\begin{tabular}{ |l|l|l|l|l|l|l| }
+\begin{table}[ht]
+\begin{center}
+\begin{tabular}{ |l|l|l|l|l|l|l|l| }
 \hline
-&  Accuracy & Error & Recall/Sensivity & Precision & Specifity & FMeasure
+&  Accuracy & Error & Recall/Sensivity & Precision & Specifity & FMeasure & Time
 \\ \hline
-AODE ( $m < 5$)& 1 & 0 & 1 & 1 & 1 & 1
+AODE ( $m < 5$)& 1 & 0 & 1 & 1 & 1 & 1 & 5.06
 \\ \hline
-AODE ( $m = 5, 6$) & 0.93 & 0.07 & 1 & 0.9 & 0.8 & 0.95
+AODE ( $m = 5, 6$) & 0.93 & 0.07 & 1 & 0.9 & 0.8 & 0.95 & NA
 \\ \hline
-Naive Bayes & 0.93 & 0.07 & 1 & 0.9 & 0.8 & 0.95
+NB (e1071) & 0.93 & 0.07 & 1 & 0.9 & 0.8 & 0.95 & 0.77
 \\ \hline
-C4.5 & 1 & 0 & 1 & 1 & 1 & 1
+NB (bnlearn) & 0.93 & 0.07 & 1 & 0.9 & 0.8 & 0.95 & 1
 \\ \hline
-TAN & 0.79 & 0.21 & 0.67 & 1 & 1 & 0.8
+TAN & 1 & 0 & 1 & 1 & 1 & 1 & 1.3
 \\ \hline
-LBR & 0.93 & 0.07 & 0.9 & 1 & 1 & 0.95
+LBR & 0.93 & 0.07 & 0.9 & 1 & 1 & 0.95 & 15.1
 \\ \hline
-
+C4.5 & 1 & 0 & 1 & 1 & 1 & 1 & 16.2
+\\ \hline
 \end{tabular}
-\\\\
-Dla prostego zbioru danych jakim jest zbiór "weather", wyniki uzyskane przez algorytm AODE dają bardzo dobry rezultat, lepszy niż naiwny bayes. Parametr \textit{m} jeżeli jest mniejszy niż 5 nie ma wpływu na wyniki. Jest to spowodowane tym że każda wartość każdego atrybutu występuje w co najmniej 4 przykładach. Dla parametru $m = 5$ następuje zwiększenie ilości błędów. Zależność ta jest spowodowana małą ilością przykładów - każdy przykład jest rozróżnialny. 
+\\\caption{Wyniki uzyskane dla zbioru Weather}
+\end{center}
+\end{table}
+
+W przypadku tak małej liczby danych, możemy wyciągnąć jedynie prymitywne hipotezy. Wszystkie algorytmy w miarę dokładnie zaklasyfikowały dane wejściowe, na których były nauczone, z dokładnością do możliwości przeuczenia modelu.
 
 \subsection{Cars}
 \subsubsection{Charakterystyka zbioru}
@@ -133,81 +320,96 @@ Dla prostego zbioru danych jakim jest zbiór "weather", wyniki uzyskane przez al
 	\item Dane testowe: 864 przykładów (pozostałe przykłady)
 \end{itemize}
 \subsubsection{Wyniki}
-\begin{tabular}{ |l|l|l| }
+\begin{table}[ht]
+\begin{center}
+\begin{tabular}{ |l|l|l|l| }
 \hline
-	 &  Accuracy & Error
+	 &  Accuracy & Error & Time
  \\ \hline
- AODE ($m < 205$) & 0.911 & 0.089
+ AODE ($m < 205$) & 0.911 & 0.089 & 67
  \\ \hline
- AODE ($m = 205$) &  0.913 & 0.087
+ AODE ($m = 205$) &  0.913 & 0.087 & NA
  \\ \hline
- AODE ($m = 210$) & 0.907 & 0.093
+ AODE ($m = 210$) & 0.907 & 0.093 & NA
  \\ \hline
- AODE ($m = 250$) & 0.894 & 0.106
+ AODE ($m = 250$) & 0.894 & 0.106 & NA
  \\ \hline
- AODE ($m = 280$) & 0.889 & 0.111
+ AODE ($m = 280$) & 0.889 & 0.111 & NA
  \\ \hline
-  Naive Bayes & 0.866 & 0.134
+ NB (e1071) & 0.866 & 0.134 & 5
+  \\ \hline
+ NB (bnlearn) & 0.878 & 0.122 & 1
  \\ \hline
- TAN & 0.3 & 0.7
+ TAN & 0.931 & 0.069 & 1
  \\ \hline
- LBR & 0.932 & 0.068
+ LBR & 0.932 & 0.068 & 34.2
  \\ \hline
- C4.5 & 0.896 & 0.104
+ C4.5 & 0.896 & 0.104 & 3.35
+ \\ \hline
+ SVM & 0.213 & 0.787 & 3.2
  \\ \hline
 \end{tabular}\\
+\caption{Wyniki uzyskane dla zbioru Cars}
+\end{center}
+\end{table}
 
-Wpływ parametru m na wynik jest zależny od rozkładu wartości poszczególnych atrybutów. W zbiorze danych \textit{car} liczba wystąpień wartości atrybutów zawiera się w przedziale [205, 305] dlatego też atrybut m powinien być mniejszy niż górna granica tego przedziału. Widać tutaj pierwszy z problemów w doborze parametru \textit{m} - zależy od ilości danych uczących. W przypadku inkrementalnego tworzenia modelu parametr ten wraz z douczaniem modelu, powinien być zmieniany. 
+Zauważmy, że najlepsze rezultaty dały dwa algorytmy: kosztowny obliczeniowo $LBR$ oraz $TAN$, który z drugiej strony był bardzo szybki. $AODE$, ten, który miał dawać, podobne rezultaty, mniejszym kosztem obliczeniowo, daje nieco gorsze wyniki z większym czasem wykonania. Kolejny jest algorytm $C4.5$, a następnie podobne rezultaty dają obie implementacje Naiwnego Bayesa, z tym że implementacja $bnlearn$ okazała się 5-krotnie szybsza. Fatalny wręcz rezultat zwrócił algorytm SVM. \\ 
+Wpływ parametru $m$ na wynik jest zależny od rozkładu wartości poszczególnych atrybutów. W zbiorze danych \textit{car} liczba wystąpień wartości atrybutów zawiera się w przedziale [205, 305] dlatego też atrybut m powinien być mniejszy niż górna granica tego przedziału. Widać tutaj pierwszy z problemów w doborze parametru \textit{m} - zależy od ilości danych uczących. W przypadku inkrementalnego tworzenia modelu parametr ten wraz z douczaniem modelu, powinien być zmieniany. Innym podejściem, jest ustalenie jego wartości jako ułamek liczba przykładów trenujących.
 
 
-\subsection{Mushrums}
+\subsection{Mushrooms}
 \subsubsection{Charakterystyka zbioru}
 \begin{itemize}
-	
-	\item {\LARGE DO UZUPEŁNIENIA }
-	
+  \item Liczba atrybutów: 22
+	\item Liczba klas: 7
+	\item Liczba przykładów: 8124
 	\item Dane uczące: 50\% wszystkich przykładów wybranych losowo 
 	\item Dane testowe: pozostałe przykłady
 \end{itemize}
 
 \subsubsection{Wyniki}
-
-\begin{tabular}{ |l|l|l| }
+\begin{table}[ht]
+\begin{center}
+\begin{tabular}{ |l|l|l|l| }
 \hline
-&  Accuracy & Error
+&  Accuracy & Error & Time
 \\ \hline
-AODE ($m = 0$) & 0.666 & 0.334
+AODE ($m = 0$) & 0.666 & 0.334 & 535 
 \\ \hline
-AODE ($m = 300$) & 0.668 & 0.332
+AODE ($m = 300$) & 0.668 & 0.332 & NA
 \\ \hline
-AODE ($m = 600$) & 0.665 & 0.335
+AODE ($m = 600$) & 0.665 & 0.335 & NA
 \\ \hline
-AODE ($m = 1500$) & 0.662 & 0.338
+AODE ($m = 1500$) & 0.662 & 0.338 & NA
 \\ \hline
-AODE ($m = 2200$) & 0.638 & 0.362
+AODE ($m = 2200$) & 0.638 & 0.362 & NA
 \\ \hline
-AODE ($m = 2800$) & 0.639 & 0.361
+AODE ($m = 2800$) & 0.639 & 0.361 & NA
 \\ \hline
-AODE ($m = 3300$) & 0.638 & 0.362
+AODE ($m = 3300$) & 0.638 & 0.362 & NA
 \\ \hline
-AODE ($m = 3500$) &0.637 & 0.363
+AODE ($m = 3500$) & 0.637 & 0.363 & NA
 \\ \hline
-Naive Bayes & 0.643 & 0.357
+NB (e1071) & 0.643 & 0.357 & 10.3
 \\ \hline
-TAN & 0.144 & 0.856
+NB (bnlearn) & 0.656 & 0.344 & 1
 \\ \hline
-LBR & 0.669 & 0.331
+TAN & 0.669 & 0.331 & 1.03
 \\ \hline
-C4.5 & 0.616 & 0.384
+LBR & 0.669 & 0.331 & 7022
 \\ \hline
-\end{tabular} \\\\
-
-Ilości atrybutów od 18 do 3973. 
-
-im większy parametr M tym szybciej się liczy
+C4.5 & 0.616 & 0.384 & 2.06
+\\ \hline
+SVM & 0.619 & 0.381 & 29.86
+\\ \hline
+\end{tabular} \\
+\caption{Wyniki uzyskane dla zbioru Mushrooms}
+\end{center}
+\end{table}
+Zgodnie z oczekiwaniami uzyskane przez nas rezultaty prezentują się w następujący sposób: najlepiej wypadł LBR oraz TAN. Ten pierwszy okazał się niezwykle nieefektywny czasowo, natomiast znowu TAN dał bardzo dobre rezultaty i był bardzo szybki. Niewiele gorszy, a i znacząco szybszy od LBR okazał się AODE. Kolejne były implementacje naiwnego Bayesa, a potem SVM, który na znacznie większych danych poradził sobie bardzo dobrze. Na końcu było drzewo decyzyjne C4.5. \\ Dotychczasowa analiza parametru $m$ pokazuje nam, że jego wartość powinna być względnie mała, służąca jedynie do odfiltrowania atrybutów, których wartość dla danego przykładu występuje względnie małą liczbę razy. Ponadto, zbyt duża wartość parametru $m$ będzie znaczyła, że jako atrybuty znaczące będziemy brać jedynie te, których dana wartość występuje bardzo często, co nie musi nam dać znaczącej wiedzy. Jednym z argumentów przemawiającym za podwyższeniem wartości $m$ jest możliwy mniejszy czas wykonania, aczkolwiek w trakcie testów nie zauważono dużej różnicy.
 
 \section{Wnioski}
-
+Najlepszym algorytmem klasyfikacji okazał się algorytm $TAN$. Dawał zarówno bardzo dobre wyniki, jaki i był efektywny czasowo. $LBR$ bardzo dobrze radził sobie ze zbiorem małych danych, natomiast w przypadku dużych zbiorów danych czas wykonania był bardzo duży. To jest spowodowane dużym nakładem obliczeniowym przy klasyfikacji każdego przykładu. Niewiele gorszy od nich był $AODE$. Wartość parametru $m$ nie powinna być wielka, ale na tyle duża, aby wyodrębnić tylko istotne atrybuty. Drzewo decyzyjne dawało nieco gorsze rezultaty od zaprezentowanych powyżej. Ciekawym przypadkiem okazał się SVM, który na mniejszych danych zupełnie sobie nie radził, w przypadku większych zbiorów danych jego rezultaty były znacznie lepsze. Wydaje się, że jego użyteczność w porównaniu do innych algorytmów rosłaby wraz ze wzrostem zbiorów danych. Bardzo ciekawym zjawiskiem okazało się porównanie obydwu implementacji naiwnego bayesa. Obydwa dawały podobne rezultaty, a ta z biblioteki $nblearn$ działała zdecydowanie szybciej.
 
 \begin{thebibliography}{9}
 	

@@ -1,7 +1,6 @@
 library("e1071")
 library("RWeka")
 library("bnlearn")
-source("aode.R")
 
 message("Do RWeka trzeba doinstalowac pakiet lazyBayesianRules przy użyciu komendy: WPM(\"install-package\", \"lazyBayesianRules\")")
 
@@ -10,25 +9,40 @@ message("Do RWeka trzeba doinstalowac pakiet lazyBayesianRules przy użyciu kome
 doTestForAllAlgorithms <- function(formula, trainingData, testData, aodeM)
 {
   idx = 1
-  #result <- testAODE(formula, trainingData, testData, aodeM)
-  #row.names(result)[idx] <- "AODE"
-  
-  #idx = idx + 1
-  #result <- rbind(result, testNaiveBayes(formula, trainingData, testData))
-  result <- testNaiveBayes(formula, trainingData, testData)
-  row.names(result)[idx] <- "Naive Bayes"
+  #print(system.time(replicate(2, testAODE(formula, trainingData, testData, aodeM))))
+  result <- testAODE(formula, trainingData, testData, aodeM)
+  row.names(result)[idx] <- "AODE"
   
   idx = idx + 1
+  #print(system.time(replicate(2, testNaiveBayes(formula, trainingData, testData))))
+  result <- rbind(result, testNaiveBayes(formula, trainingData, testData))
+  #result <- testNaiveBayes(formula, trainingData, testData)
+  row.names(result)[idx] <- "NB (e1071)"
+  
+  idx = idx + 1
+  #print(system.time(replicate(2, testNB(formula, trainingData, testData))))
+  result <- rbind(result, testNB(formula, trainingData, testData))
+  row.names(result)[idx] <- "NB (bnlearn)"
+  
+  idx = idx + 1
+  #print(system.time(replicate(2, testTAN(formula, trainingData, testData))))
   result <- rbind(result, testTAN(formula, trainingData, testData))
   row.names(result)[idx] <- "TAN"
   
   idx = idx + 1
-  result <- rbind(result, testLBR(formula, trainingData, testData))
-  row.names(result)[idx] <- "LBR"
-  
-  idx = idx + 1
+  #print(system.time(replicate(2, testLBR(formula, trainingData, testData))))
+  #result <- rbind(result, testLBR(formula, trainingData, testData))
+  #row.names(result)[idx] <- "LBR"
+
+  #idx = idx + 1
+  #print(system.time(replicate(2, testC45(formula, trainingData, testData))))
   result <- rbind(result, testC45(formula, trainingData, testData))
   row.names(result)[idx] <- "C4.5"
+  
+  #idx = idx + 1
+  #print(system.time(replicate(2, testSVM(formula, trainingData, testData))))
+  #result <- rbind(result, testSVM(formula, trainingData, testData))
+  #row.names(result)[idx] <- "SVM"
   
   result
 }
@@ -44,7 +58,6 @@ testAODE <- function(formula, trainingData, testData, aodeM)
 testAODEWithModel <- function(formula, model, testData, aodeM)
 {
   pred <- prediction.aode(model = model, m = aodeM, data = testData)
-  
   win <- apply(pred, 1, function(x) noquote(names(which.max(x))))
   
   result <- calcRatesFor(formula, testData, win) 
@@ -56,10 +69,19 @@ testNaiveBayes <-function(formula, trainingData, testData)
 {
   model <- naiveBayes(formula, trainingData)
   pred <- predict(model, testData)
-  
   result <- calcRatesFor(formula, testData, pred ) 
   result
 }
+
+testNB <-function(formula, trainingData, testData)
+{
+  cl <- toString(formula[[2]])
+  model <- naive.bayes(trainingData, cl)
+  pred <- predict(model, testData)
+  result <- calcRatesFor(formula, testData, pred ) 
+  result
+}
+
 
 testC45 <-function(formula, trainingData, testData)
 {
@@ -74,9 +96,9 @@ testC45 <-function(formula, trainingData, testData)
 testTAN <- function(formula, trainingData, testData)
 {
   cl <- toString(formula[[2]])
-  model <- tree.bayes(trainingData, cl)
-  
-  pred <- predict(model, testData)
+  tan <- tree.bayes(trainingData, cl)
+  fitted = bn.fit(tan, trainingData, method = "bayes")
+  pred <- predict(fitted, testData)
   
   result <- calcRatesFor(formula, testData, pred ) 
   result
@@ -95,6 +117,15 @@ testLBR <-function(formula, trainingData, testData, cost = NULL, numFolds = 0, c
                                 seed = seed)
   
   result <- calcRates(e$confusionMatrix ) 
+  result
+}
+
+testSVM <-function(formula, trainingData, testData)
+{
+  
+  model   <- svm(formula, data = trainingData)
+  pred <- predict(model, testData)
+  result <- calcRatesFor(formula, testData, pred) 
   result
 }
 
