@@ -10,7 +10,6 @@
 ## Intermediate documents:
 *.dvi
 *-converted-to.*
-*.pdf
 
 ## Bibliography auxiliary files (bibtex/biblatex/biber):
 *.bbl
