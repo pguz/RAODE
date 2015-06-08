@@ -3,7 +3,8 @@ library("RWeka")
 library("bnlearn")
 
 message("Do RWeka trzeba doinstalowac pakiet lazyBayesianRules przy użyciu komendy: WPM(\"install-package\", \"lazyBayesianRules\")")
-
+message("Pakiet zostanie doinstalowany tymczasowo")
+message("W celu instalacji na stałe ustawić zmienną środowiskową WEKA_HOME na wybrany folder")
 ########################################################################################
 
 doTestForAllAlgorithms <- function(formula, trainingData, testData, aodeM)
@@ -31,8 +32,8 @@ doTestForAllAlgorithms <- function(formula, trainingData, testData, aodeM)
   
   idx = idx + 1
   #print(system.time(replicate(2, testLBR(formula, trainingData, testData))))
-  #result <- rbind(result, testLBR(formula, trainingData, testData))
-  #row.names(result)[idx] <- "LBR"
+  result <- rbind(result, testLBR(formula, trainingData, testData))
+  row.names(result)[idx] <- "LBR"
 
   #idx = idx + 1
   #print(system.time(replicate(2, testC45(formula, trainingData, testData))))

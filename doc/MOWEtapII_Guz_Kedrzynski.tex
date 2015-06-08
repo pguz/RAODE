@@ -262,7 +262,7 @@ Został przetestowane przez nas 3 zbiory danych (src/tests.R):
 \end{itemize}
 W przypadku większych zbiorów danych, istniały problemy z wystarczającymi zasobami używanych przez nas maszyn obliczeniowych. \\
 
-Wszystkie użyte przez nas dane zawierają atrybuty dyskretne. \\
+Wszystkie użyte przez nas dane zawierają atrybuty dyskretne. W przypadku braku wartości atrybutu, potraktowaliśmy brak atrybutu jako kolejną wartość atrybutu (problem istniał w danych mushrooms).\\
 
 Czas wykonania poszczególnych funkcji wyznaczono na podstawie funkcji:
 \begin{center}
@@ -308,7 +308,7 @@ C4.5 & 1 & 0 & 1 & 1 & 1 & 1 & 16.2
 \end{center}
 \end{table}
 
-W przypadku tak małej liczby danych, możemy wyciągnąć jedynie prymitywne hipotezy. Wszystkie algorytmy w miarę dokładnie zaklasyfikowały dane wejściowe, na których były nauczone, z dokładnością do możliwości przeuczenia modelu.
+W przypadku tak małej liczby danych, możemy wyciągnąć jedynie prymitywne hipotezy. Wszystkie algorytmy w miarę dokładnie zaklasyfikowały dane wejściowe, na których były nauczone, z dokładnością do możliwości przeuczenia modelu. Tak mały zbiór danych nie pozwalał na stworzenie satysfakcjonującego modelu SVM, dla każdego przykładu przewidywał jedną klasę decyzyjną.
 
 \subsection{Cars}
 \subsubsection{Charakterystyka zbioru}
@@ -353,8 +353,8 @@ W przypadku tak małej liczby danych, możemy wyciągnąć jedynie prymitywne hi
 \end{center}
 \end{table}
 
-Zauważmy, że najlepsze rezultaty dały dwa algorytmy: kosztowny obliczeniowo $LBR$ oraz $TAN$, który z drugiej strony był bardzo szybki. $AODE$, ten, który miał dawać, podobne rezultaty, mniejszym kosztem obliczeniowo, daje nieco gorsze wyniki z większym czasem wykonania. Kolejny jest algorytm $C4.5$, a następnie podobne rezultaty dają obie implementacje Naiwnego Bayesa, z tym że implementacja $bnlearn$ okazała się 5-krotnie szybsza. Fatalny wręcz rezultat zwrócił algorytm SVM. \\ 
-Wpływ parametru $m$ na wynik jest zależny od rozkładu wartości poszczególnych atrybutów. W zbiorze danych \textit{car} liczba wystąpień wartości atrybutów zawiera się w przedziale [205, 305] dlatego też atrybut m powinien być mniejszy niż górna granica tego przedziału. Widać tutaj pierwszy z problemów w doborze parametru \textit{m} - zależy od ilości danych uczących. W przypadku inkrementalnego tworzenia modelu parametr ten wraz z douczaniem modelu, powinien być zmieniany. Innym podejściem, jest ustalenie jego wartości jako ułamek liczba przykładów trenujących.
+Zauważmy, że najlepsze rezultaty dały dwa algorytmy: kosztowny obliczeniowo $LBR$ oraz $TAN$, który z drugiej strony był bardzo szybki. $AODE$, ten, który miał dawać podobne rezultaty mniejszym kosztem obliczeniowym niz wyzej wymienione algorytmy, daje nieco gorsze wyniki i to z większym czasem wykonania. Kolejny jest algorytm $C4.5$, a następnie podobne rezultaty dają obie implementacje Naiwnego Bayesa, z tym że implementacja $bnlearn$ okazała się 5-krotnie szybsza. Fatalne wręcz rezultat zwrócił algorytm SVM, co może dalej świadczyć o niewystarczającej ilości danych do wytrenowania odpowiedniego modelu. \\ 
+Wpływ parametru $m$ na wynik jest uzależniony od liczby wystąpień wartości atrybutów. W zbiorze danych \textit{car} liczba wystąpień wartości atrybutów zawiera się w przedziale [205, 305] dlatego też atrybut m powinien być mniejszy niż górna granica tego przedziału. Widać tutaj pierwszy z problemów w doborze parametru \textit{m} - zależy od ilości danych uczących. W przypadku inkrementalnego tworzenia modelu parametr ten wraz z douczaniem modelu, powinien być zmieniany. Innym podejściem, jest ustalenie jego wartości jako ułamek liczba przykładów trenujących.
 
 
 \subsection{Mushrooms}
@@ -406,10 +406,12 @@ SVM & 0.619 & 0.381 & 29.86
 \caption{Wyniki uzyskane dla zbioru Mushrooms}
 \end{center}
 \end{table}
-Zgodnie z oczekiwaniami uzyskane przez nas rezultaty prezentują się w następujący sposób: najlepiej wypadł LBR oraz TAN. Ten pierwszy okazał się niezwykle nieefektywny czasowo, natomiast znowu TAN dał bardzo dobre rezultaty i był bardzo szybki. Niewiele gorszy, a i znacząco szybszy od LBR okazał się AODE. Kolejne były implementacje naiwnego Bayesa, a potem SVM, który na znacznie większych danych poradził sobie bardzo dobrze. Na końcu było drzewo decyzyjne C4.5. \\ Dotychczasowa analiza parametru $m$ pokazuje nam, że jego wartość powinna być względnie mała, służąca jedynie do odfiltrowania atrybutów, których wartość dla danego przykładu występuje względnie małą liczbę razy. Ponadto, zbyt duża wartość parametru $m$ będzie znaczyła, że jako atrybuty znaczące będziemy brać jedynie te, których dana wartość występuje bardzo często, co nie musi nam dać znaczącej wiedzy. Jednym z argumentów przemawiającym za podwyższeniem wartości $m$ jest możliwy mniejszy czas wykonania, aczkolwiek w trakcie testów nie zauważono dużej różnicy.
+Zgodnie z oczekiwaniami uzyskane przez nas rezultaty prezentują się w następujący sposób: najlepiej wypadł LBR oraz TAN. Ten pierwszy okazał się niezwykle nieefektywny czasowo, natomiast znowu TAN dał bardzo dobre rezultaty i był bardzo szybki. Niewiele gorszy, a tym razem znacząco szybszy od LBR okazał się AODE. Kolejne były implementacje naiwnego Bayesa, a potem SVM, który na znacznie większych danych poradził sobie bardzo dobrze. Na końcu było drzewo decyzyjne C4.5. \\ Dotychczasowa analiza parametru $m$ pokazuje nam, że jego wartość powinna być względnie mała, służąca jedynie do odfiltrowania atrybutów, których wartość dla danego przykładu występuje względnie małą liczbę razy. Ponadto, zbyt duża wartość parametru $m$ będzie znaczyła, że jako atrybuty znaczące będziemy brać jedynie te, których dana wartość występuje bardzo często, co nie musi nam dać znaczącej wiedzy. Jednym z argumentów przemawiającym za podwyższeniem wartości $m$ jest możliwy mniejszy czas wykonania, aczkolwiek w trakcie testów nie zauważono dużej różnicy.
 
 \section{Wnioski}
-Najlepszym algorytmem klasyfikacji okazał się algorytm $TAN$. Dawał zarówno bardzo dobre wyniki, jaki i był efektywny czasowo. $LBR$ bardzo dobrze radził sobie ze zbiorem małych danych, natomiast w przypadku dużych zbiorów danych czas wykonania był bardzo duży. To jest spowodowane dużym nakładem obliczeniowym przy klasyfikacji każdego przykładu. Niewiele gorszy od nich był $AODE$. Wartość parametru $m$ nie powinna być wielka, ale na tyle duża, aby wyodrębnić tylko istotne atrybuty. Drzewo decyzyjne dawało nieco gorsze rezultaty od zaprezentowanych powyżej. Ciekawym przypadkiem okazał się SVM, który na mniejszych danych zupełnie sobie nie radził, w przypadku większych zbiorów danych jego rezultaty były znacznie lepsze. Wydaje się, że jego użyteczność w porównaniu do innych algorytmów rosłaby wraz ze wzrostem zbiorów danych. Bardzo ciekawym zjawiskiem okazało się porównanie obydwu implementacji naiwnego bayesa. Obydwa dawały podobne rezultaty, a ta z biblioteki $nblearn$ działała zdecydowanie szybciej.
+Dla testowanych przez nas zbiorów danych najlepsze rezultaty zwracał algorytm $TAN$. Dawał zarówno bardzo dobre wyniki, jaki i był szybki. $LBR$ bardzo dobrze radził sobie z małym zbiorem danych, natomiast w przypadku dużych zbiorów danych czas wykonania był nieakceptowalny. Jest to spowodowane dużym nakładem obliczeniowym przy klasyfikacji każdego przykładu. Niewiele gorsze rezultatu dawał algorytm $AODE$. Jednak czas jego wykonania był zawsze większy od algorytmu $TAN$. Wydaje się, że implementacja algorytmu $AODE$ mogłaby być efektywniejsza wykorzystując bardziej wyszukane struktury danych. Wartość parametru $m$ nie powinna być wielka, ale na tyle duża, aby wyodrębnić tylko istotne atrybuty. Drzewo decyzyjne dawało nieco gorsze rezultaty od zaprezentowanych powyżej. Ciekawym przypadkiem okazał się SVM, który na mniejszych danych zupełnie sobie nie radził, w przypadku większych zbiorów danych jego rezultaty były znacznie lepsze. Wydaje się, że jego użyteczność w porównaniu do innych algorytmów rosłaby wraz ze wzrostem zbiorów danych. Bardzo ciekawym zjawiskiem okazało się porównanie obydwu implementacji naiwnego bayesa. Obydwa dawały podobne rezultaty, a ta z biblioteki $nblearn$ działała zdecydowanie szybciej. 
+
+Dla wystarczająco dużego zbioru danych testowane wyniki były w miarę zbliżone. Jednak zaleca się, w celu dokładniejszej analizy, przeprowadzić porównanie dla różnorodnych zbiorów danych oraz większej liczby atrybutów. Powyższa analiza pokazała także, że warunek o niezależności atrybutów jest zazwyczaj niespełniony (naiwny bayes zawsze dawał gorsze rezultaty), wskazane jest dobranie algorytmu odpowiedniego dla testowanych danych.
 
 \begin{thebibliography}{9}
 	

@@ -47,7 +47,7 @@ print(res)
 toTexTable(res)
 
 
-# tylko dla AODE
+# tylko dla AODE (testowanie parametru m)
 #aodew <- aode(formula, splData$trainset)
 #pred <- prediction.aode(model = aodew, m = 280, data = splData$testset)
 #win <- apply(pred, 1, function(x) noquote(names(which.max(x))))
@@ -80,7 +80,7 @@ print(res)
 toTexTable(res)
 
 
-# tylko dla AODE
+# tylko dla AODE (testowanie parametru m)
 #aodew <- aode(formula, splData$trainset)
 #pred <- prediction.aode(model = aodew, m = 3900, data = splData$testset)
 #win <- apply(pred, 1, function(x) noquote(names(which.max(x))))
@@ -89,27 +89,3 @@ toTexTable(res)
 #print(result)
 
 #toTexTable(result)
-
-
-################ connect-4 ################  
-# liczba atrybutów: 42
-
-#data <- read.csv("data/connect-4.data", sep=",")
-#colnames(data)[length(colnames(data))] <- "class"
-
-#splData = splitData(data, traningDataLen = 100, testDataLen = 1000)
-
-#formula = class~.
-
-#system.time({
-  
-#  res <- doTestForAllAlgorithms(
-#    formula = formula,
-#    trainingData = data,
-#    testData= data,
-#    aodeM = 1 )
-#})
-
-#toTexTable(res)
-
-###############
